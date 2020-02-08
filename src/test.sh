@@ -4,7 +4,6 @@ try () {
     local -r expected="$1"
     local -r input="$2"
 
-    gcc -o 9cc 9cc.c
     ./9cc "$input" > tmp.s
     gcc -o tmp tmp.s
     ./tmp
@@ -25,4 +24,7 @@ echo "### step2: 加減算のできるコンパイラの作成"
 try 21 "5+20-4"
 echo "### step3: トークナイザを導入"
 try 41 " 12 + 34 - 5 "
+#echo "### step4: エラーメッセージを改良"
+#try 1 "1+3++"
+#try 1 "1 + foo + 3"
 echo ok
