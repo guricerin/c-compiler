@@ -13,6 +13,7 @@
 typedef enum
 {
     TK_RESERVED, // 記号
+    TK_IDENT,    // 識別子
     TK_NUM,      // 整数
     TK_EOF,      // 入力の終わりを表す
 } TokenKind;
@@ -49,15 +50,19 @@ extern Token *token;
 // 抽象構文機のノードの種類
 typedef enum
 {
-    ND_ADD, // +
-    ND_SUB, // -
-    ND_MUL, // *
-    ND_DIV, // /
-    ND_EQ,  // ==
-    ND_NE,  // !=
-    ND_LT,  // <
-    ND_LE,  // <=
-    ND_NUM, // 整数
+    ND_ADD,       // +
+    ND_SUB,       // -
+    ND_MUL,       // *
+    ND_DIV,       // /
+    ND_EQ,        // ==
+    ND_NE,        // !=
+    ND_LT,        // <
+    ND_LE,        // <=
+    ND_ASSIGN,    // =
+    ND_RETURN,    // "return"
+    ND_EXPR_STMT, // 式
+    ND_LVAR,      // ローカル変数
+    ND_NUM,       // 整数
 } NodeKind;
 
 // 再帰的な構造体を作りたい場合、単純に typedef struct {...} NAME; とするのでは不可能
@@ -66,12 +71,14 @@ typedef struct Node Node;
 struct Node
 {
     NodeKind kind; // ノードの型
+    Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
+    int offset;    // kindがND_LVARの場合のみ使う。ローカル変数のベースポインタからのオフセット
 };
 
-Node *expr();
+Node *program();
 
 /*
     codegen.c

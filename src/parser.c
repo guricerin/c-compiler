@@ -23,6 +23,8 @@ static Node *new_node_num(int val)
     return node;
 }
 
+static Node *stmt();
+static Node *expr();
 static Node *equality();
 static Node *relational();
 static Node *add();
@@ -30,8 +32,30 @@ static Node *mul();
 static Node *unary();
 static Node *primary();
 
+// program = stmt*
+Node *program()
+{
+    Node head = {};
+    Node *cur = &head;
+
+    while (!at_eof())
+    {
+        cur->next = stmt();
+        cur = cur->next;
+    }
+    return head.next;
+}
+
+// stmt = expr ";"
+Node *stmt()
+{
+    Node *node = expr();
+    expect(";");
+    return node;
+}
+
 // expr = equality
-Node *expr()
+static Node *expr()
 {
     return equality();
 }

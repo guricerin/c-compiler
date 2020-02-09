@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 
     user_input = argv[1];
     token = tokenize(argv[1]);
-    Node *node = expr();
+    Node *node = program();
 
     codegen(node);
 

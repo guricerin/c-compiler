@@ -103,6 +103,13 @@ Token *tokenize(char *p)
             continue;
         }
 
+        // 1文字の区切り文字(スペースやタブ文字はfalse)
+        if (ispunct(*p))
+        {
+            cur = new_token(TK_RESERVED, cur, p++, 1);
+            continue;
+        }
+
         // 整数値リテラル
         if (isdigit(*p))
         {
@@ -113,7 +120,7 @@ Token *tokenize(char *p)
             continue;
         }
 
-        error_at(cur->str, "トークナイズできません");
+        error_at(cur->str, "無効なトークンです");
     }
 
     new_token(TK_EOF, cur, p, 0);
