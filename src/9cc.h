@@ -29,8 +29,10 @@ struct Token
     int len;        // トークンの長さ
 };
 
+void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool consume(char *op);
+Token *consume_ident();
 void expect(char *op);
 int expect_number();
 bool at_eof();
@@ -61,7 +63,7 @@ typedef enum
     ND_ASSIGN,    // =
     ND_RETURN,    // "return"
     ND_EXPR_STMT, // 式
-    ND_LVAR,      // ローカル変数
+    ND_VAR,       // 変数
     ND_NUM,       // 整数
 } NodeKind;
 
@@ -74,8 +76,8 @@ struct Node
     Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
-    long val;      // kindがND_NUMの場合のみ使う
-    int offset;    // kindがND_LVARの場合のみ使う。ローカル変数のベースポインタからのオフセット
+    char name;     // 変数名。kindがND_VALの場合のm使用
+    long val;      // kindがND_NUMの場合のみ使用
 };
 
 Node *program();

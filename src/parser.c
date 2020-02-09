@@ -31,8 +31,16 @@ static Node *new_node_num(int val)
     return node;
 }
 
+static Node *new_var_node(char name)
+{
+    Node *node = new_node(ND_VAR);
+    node->name = name;
+    return node;
+}
+
 static Node *stmt();
 static Node *expr();
+static Node *assign();
 static Node *equality();
 static Node *relational();
 static Node *add();
@@ -65,16 +73,25 @@ Node *stmt()
     }
     else
     {
-        Node *node = expr();
+        Node *node = new_unary(ND_EXPR_STMT, expr());
         expect(";");
         return node;
     }
 }
 
-// expr = equality
+// expr = assign
 static Node *expr()
 {
-    return equality();
+    return assign();
+}
+
+// assign = equality ("=" assign)?
+static Node *assign()
+{
+    Node *node = equality();
+    if (consume("="))
+        node = new_binary(ND_ASSIGN, node, assign());
+    return node;
 }
 
 // equality = relational ("==" relational | "!=" relational)
@@ -154,7 +171,7 @@ Node *unary()
         return primary();
 }
 
-// primary = num | "(" expr ")"
+// primary = "(" expr ")" | ident | num
 Node *primary()
 {
     // 次のトークンが"("なら、"(" expr ")"のはず
@@ -163,6 +180,13 @@ Node *primary()
         Node *node = expr();
         expect(")");
         return node;
+    }
+
+    // 識別子なら変数名のはず
+    Token *tok = consume_ident();
+    if (tok)
+    {
+        return new_var_node(*tok->str);
     }
 
     // そうでなければ数値のはず

@@ -1,5 +1,36 @@
 #include "9cc.h"
 
+static void gen_addr(Node *node)
+{
+    if (node->kind == ND_VAR)
+    {
+        // スタックポインタからのオフセットで変数のアドレスを計算し、スタックにプッシュ
+        int offset = (node->name - 'a' + 1) * 8;
+        printf("    lea rax, [rbp-%d]\n", offset);
+        printf("    push rax\n");
+        return;
+    }
+
+    error("代入の左辺値が変数ではありません");
+}
+
+// メモリから値を読み込む
+static void load()
+{
+    printf("    pop rax\n");
+    printf("    mov rax, [rax]\n"); // RAXに入っているアドレスから値を読み込み、RAXにセット
+    printf("    push rax\n");
+}
+
+// メモリに値を格納
+static void store()
+{
+    printf("    pop rdi\n");
+    printf("    pop rax\n");
+    printf("    mov [rax], rdi\n");
+    printf("    push rdi\n");
+}
+
 // 抽象構文木をアセンブリに変換
 static void gen(Node *node)
 {
@@ -8,10 +39,23 @@ static void gen(Node *node)
     case ND_NUM:
         printf("    push %ld\n", node->val);
         return;
+    case ND_EXPR_STMT:
+        gen(node->lhs);
+        printf("    add rsp, 8\n");
+        return;
+    case ND_VAR:
+        gen_addr(node);
+        load();
+        return;
+    case ND_ASSIGN:
+        gen_addr(node->lhs);
+        gen(node->rhs);
+        store();
+        return;
     case ND_RETURN:
         gen(node->lhs);
         printf("    pop rax\n");
-        printf("    ret\n");
+        printf("    jmp .L.return\n");
         return;
     }
 
@@ -68,13 +112,22 @@ void codegen(Node *node)
     printf(".global main\n");
     printf("main:\n");
 
+    // プロローグ
+    // 変数26個分の領域を確保
+    printf("    push rbp\n");
+    printf("    mov rbp, rsp\n");
+    printf("    sub rsp, 208\n");
+
     // 抽象構文木を下りながらコード生成
     for (Node *n = node; n; n = n->next)
     {
         gen(n);
-        // スタックトップに式全体の値が残っているはずなので、それをRAXにロード
-        printf("    pop rax\n");
     }
 
+    // エピローグ
+    // 最後の式の結果が残っているのでそれが返り値になる
+    printf(".L.return:\n");
+    printf("    mov rsp, rbp\n");
+    printf("    pop rbp\n");
     printf("    ret\n");
 }
