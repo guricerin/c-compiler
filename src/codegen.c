@@ -3,9 +3,15 @@
 // 抽象構文木をアセンブリに変換
 static void gen(Node *node)
 {
-    if (node->kind == ND_NUM)
+    switch (node->kind)
     {
-        printf("    push %d\n", node->val);
+    case ND_NUM:
+        printf("    push %ld\n", node->val);
+        return;
+    case ND_RETURN:
+        gen(node->lhs);
+        printf("    pop rax\n");
+        printf("    ret\n");
         return;
     }
 

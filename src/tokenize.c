@@ -18,12 +18,13 @@ void error_at(char *loc, char *fmt, ...)
     exit(1);
 }
 
+// トークン先読み
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めてtrueを返す
 bool consume(char *op)
 {
     // 条件の順序に注意
     // 長いトークンから先にトークナイズする必要あり
-    if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
+    if (token->kind != TK_RESERVED || strlen(op) != token->len || strncmp(token->str, op, token->len))
         return false;
     token = token->next;
     return true;
@@ -33,7 +34,7 @@ bool consume(char *op)
 // それ以外の場合にはエラーを報告する。
 void expect(char *op)
 {
-    if (token->kind != TK_RESERVED || strlen(op) != token->len || memcmp(token->str, op, token->len))
+    if (token->kind != TK_RESERVED || strlen(op) != token->len || strncmp(token->str, op, token->len))
         error_at(token->str, "'%s'ではありません", op);
     token = token->next;
 }
@@ -44,7 +45,7 @@ int expect_number()
 {
     if (token->kind != TK_NUM)
         error_at(token->str, "数ではありません");
-    int val = token->val;
+    long val = token->val;
     token = token->next;
     return val;
 }
@@ -71,6 +72,16 @@ static bool startswith(char *p, char *q)
     return memcmp(p, q, strlen(q)) == 0;
 }
 
+static bool is_alpha(char c)
+{
+    return ('a' <= c && c <= 'z');
+}
+
+static bool is_alnum(char c)
+{
+    return is_alpha(c) || ('0' <= c && c <= '9');
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p)
 {
@@ -88,18 +99,19 @@ Token *tokenize(char *p)
             continue;
         }
 
+        // 予約語
+        if (startswith(p, "return") && !is_alnum(p[6]))
+        {
+            cur = new_token(TK_RESERVED, cur, p, 6);
+            p += 6;
+            continue;
+        }
+
         // 複数文字列の演算子
         if (startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">="))
         {
             cur = new_token(TK_RESERVED, cur, p, 2);
             p += 2;
-            continue;
-        }
-
-        // 1文字の演算子
-        if (strchr("+-*/()<>", *p))
-        {
-            cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
         }
 
@@ -115,7 +127,7 @@ Token *tokenize(char *p)
         {
             cur = new_token(TK_NUM, cur, p, 0);
             char *q = p;
-            cur->val = strtol(p, &p, 10);
+            cur->val = strtol(p, &p, 10); // 10進数として解釈
             cur->len = p - q;
             continue;
         }

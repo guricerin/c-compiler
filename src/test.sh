@@ -5,7 +5,7 @@ try () {
     local -r input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -o tmp tmp.s
+    gcc -static -o tmp tmp.s
     ./tmp
     local -r actual="$?"
 
@@ -48,8 +48,7 @@ try 0 "1>=2;"
 echo "### step8: 分割コンパイルとリンク"
 echo "ここまで到達してたらok"
 
-echo "### step9: 1文字のローカル変数"
-echo "unimplemented!"
+echo "### step9: 文"
 try 0 '0==1;'
 try 1 '42==42;'
 try 1 '0!=1;'
@@ -67,5 +66,43 @@ try 1 '1>=0;'
 try 1 '1>=1;'
 try 0 '1>=2;'
 try 3 '1; 2; 3;'
+
+echo "### step9: return"
+try 0 'return 0;'
+try 42 'return 42;'
+try 21 'return 5+20-4;'
+try 41 'return  12 + 34 - 5 ;'
+try 47 'return 5+6*7;'
+try 15 'return 5*(9-6);'
+try 4 'return (3+5)/2;'
+try 10 'return -10+20;'
+try 10 'return - -10;'
+try 10 'return - - +10;'
+
+try 0 'return 0==1;'
+try 1 'return 42==42;'
+try 1 'return 0!=1;'
+try 0 'return 42!=42;'
+
+try 1 'return 0<1;'
+try 0 'return 1<1;'
+try 0 'return 2<1;'
+try 1 'return 0<=1;'
+try 1 'return 1<=1;'
+try 0 'return 2<=1;'
+
+try 1 'return 1>0;'
+try 0 'return 1>1;'
+try 0 'return 1>2;'
+try 1 'return 1>=0;'
+try 1 'return 1>=1;'
+try 0 'return 1>=2;'
+
+try 1 'return 1; 2; 3;'
+try 2 '1; return 2; 3;'
+try 3 '1; 2; return 3;'
+
+echo "### step9: 1文字のローカル変数"
+echo "unimplemented!"
 
 echo ok

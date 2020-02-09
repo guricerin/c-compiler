@@ -16,6 +16,14 @@ static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
     return node;
 }
 
+// 単項演算子
+static Node *new_unary(NodeKind kind, Node *expr)
+{
+    Node *node = new_node(kind);
+    node->lhs = expr;
+    return node;
+}
+
 static Node *new_node_num(int val)
 {
     Node *node = new_node(ND_NUM);
@@ -46,12 +54,21 @@ Node *program()
     return head.next;
 }
 
-// stmt = expr ";"
+// stmt = "return" expr ";" | expr ";"
 Node *stmt()
 {
-    Node *node = expr();
-    expect(";");
-    return node;
+    if (consume("return"))
+    {
+        Node *node = new_unary(ND_RETURN, expr());
+        expect(";");
+        return node;
+    }
+    else
+    {
+        Node *node = expr();
+        expect(";");
+        return node;
+    }
 }
 
 // expr = equality
