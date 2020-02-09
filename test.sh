@@ -3,10 +3,12 @@
 try () {
     local -r expected="$1"
     local -r input="$2"
+    local -r assembly="./obj/tmp.s"
+    local -r binary="./obj/tmp"
 
-    ./9cc "$input" > tmp.s
-    gcc -static -o tmp tmp.s
-    ./tmp
+    ./bin/9cc "$input" > "$assembly"
+    gcc -static -o "$binary" "$assembly"
+    $binary
     local -r actual="$?"
 
     if [ "$actual" = "$expected" ]; then

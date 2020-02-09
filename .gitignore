@@ -1,5 +1,9 @@
+bin/
+obj/
 *~
 *.o
 tmp*
 a.out
 9cc
+
+!.gitkeep
