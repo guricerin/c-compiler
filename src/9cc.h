@@ -71,7 +71,8 @@ typedef enum
     ND_LT,        // <
     ND_LE,        // <=
     ND_ASSIGN,    // =
-    ND_RETURN,    // "return"
+    ND_RETURN,    // "return"キーワード
+    ND_IF,        // "if"キーワード
     ND_EXPR_STMT, // 式
     ND_VAR,       // 変数
     ND_NUM,       // 整数
@@ -86,8 +87,14 @@ struct Node
     Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
-    Var *var;      // ローカル変数。kindがND_VALの場合のm使用
-    long val;      // kindがND_NUMの場合のみ使用
+
+    // if文
+    Node *cond;
+    Node *then;
+    Node *els;
+
+    Var *var; // ローカル変数。kindがND_VALの場合のm使用
+    long val; // kindがND_NUMの場合のみ使用
 };
 
 typedef struct Function Function;

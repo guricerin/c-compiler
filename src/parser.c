@@ -91,13 +91,33 @@ Function *program()
     return prog;
 }
 
-// stmt = "return" expr ";" | expr ";"
+static Node *read_expr_stmt()
+{
+    return new_unary(ND_EXPR_STMT, expr());
+}
+
+// stmt = "return" expr ";"
+//      | expr ";"
+//      | "if" "(" expr ")" stmt ("else" stmt)?
 Node *stmt()
 {
     if (consume("return"))
     {
         Node *node = new_unary(ND_RETURN, expr());
         expect(";");
+        return node;
+    }
+    else if (consume("if"))
+    {
+        Node *node = new_node(ND_IF);
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
+        if (consume("else"))
+        {
+            node->els = stmt();
+        }
         return node;
     }
     else

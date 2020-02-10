@@ -1,5 +1,8 @@
 #include "9cc.h"
 
+// 通し番号付きのラベル
+static int labelseq = 1;
+
 static void gen_addr(Node *node)
 {
     if (node->kind == ND_VAR)
@@ -10,7 +13,7 @@ static void gen_addr(Node *node)
         return;
     }
 
-    error("代入の左辺値が変数ではありません");
+    error("代入文の左辺値が変数ではありません");
 }
 
 // メモリから値を読み込む
@@ -56,6 +59,32 @@ static void gen(Node *node)
         printf("    pop rax\n");
         printf("    jmp .L.return\n");
         return;
+    case ND_IF:
+    {
+        int seq = labelseq++;
+        if (node->els)
+        {
+            gen(node->cond);
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            printf("    je  .L.else.%d\n", seq);
+            gen(node->then);
+            printf("    jmp .L.end.%d\n", seq);
+            printf(".L.else.%d:\n", seq);
+            gen(node->els);
+            printf(".L.end.%d:\n", seq);
+        }
+        else
+        {
+            gen(node->cond);
+            printf("    pop rax\n");
+            printf("    cmp rax, 0\n");
+            printf("    je  .L.end.%d\n", seq);
+            gen(node->then);
+            printf(".L.end.%d:\n", seq);
+        }
+        return;
+    }
     }
 
     gen(node->lhs);
