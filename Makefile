@@ -11,13 +11,13 @@ TARGET=$(BIN_DIR)/*
 	$(CC) -o $(BIN_DIR)/9cc $(OBJS) $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	mkdir -p ./obj ./bin
+	mkdir -p $(BIN_DIR) $(OBJ_DIR)
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 test: 9cc
-	./test.sh
+	./tests/test.sh
 
 clean:
-	rm -f $(OBJ_DIR)/*
+	rm -f $(BIN_DIR)/* $(OBJ_DIR)/*
 
 .PHONY: test clean
