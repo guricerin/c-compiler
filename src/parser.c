@@ -138,6 +138,7 @@ Node *equality()
     }
 }
 
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 Node *relational()
 {
     Node *node = add();

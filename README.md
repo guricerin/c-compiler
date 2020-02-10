@@ -10,6 +10,21 @@
 * 解放はしない
 * Cファイルを読み込んでアセンブリを出力するだけの短命なプログラムゆえ、プログラム終了時に確保されているメモリをOSが自動解放する機能に任せる
 
+## 生成規則
+
+```
+program    = stmt*
+stmt       = "return" expr ";" | expr ";"
+expr       = assign
+assign     = equality ("=" assign)?
+equality   = relational ("==" relational | "!=" relational)
+relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+add        = mul ("+" mul | "-" mul)*
+mul        = unary ("*" unary | "/" unary)*
+unary      = ("+" | "-")? unary | primary
+primary    = "(" expr ")" | ident | num
+```
+
 ## 用語
 
 ### 文法の記述方法と再帰下降構文解析
