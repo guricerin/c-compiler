@@ -132,9 +132,13 @@ Token *tokenize(char *p)
         }
 
         // 識別子
-        if ('a' <= *p && *p <= 'z')
+        if (is_alpha(*p))
         {
-            cur = new_token(TK_IDENT, cur, p++, 1);
+            // 識別子の文字数を算出
+            char *q = p++;
+            while (is_alnum(*p))
+                p++;
+            cur = new_token(TK_IDENT, cur, q, p - q);
             continue;
         }
 

@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -18,8 +19,8 @@ typedef enum
     TK_EOF,      // 入力の終わりを表す
 } TokenKind;
 
+// トークン
 typedef struct Token Token;
-
 struct Token
 {
     TokenKind kind; // トークンの型
@@ -49,6 +50,15 @@ extern Token *token;
     parse.c
 */
 
+// ローカル変数
+typedef struct Var Var;
+struct Var
+{
+    Var *next;
+    char *name; // 変数名
+    int offset; // RBPからのオフセット
+};
+
 // 抽象構文機のノードの種類
 typedef enum
 {
@@ -76,13 +86,22 @@ struct Node
     Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
-    char name;     // 変数名。kindがND_VALの場合のm使用
+    Var *var;      // ローカル変数。kindがND_VALの場合のm使用
     long val;      // kindがND_NUMの場合のみ使用
 };
 
-Node *program();
+typedef struct Function Function;
+struct Function
+{
+    Node *node;
+    Var *locals;
+    int stack_size;
+};
+
+Function *program();
 
 /*
     codegen.c
 */
-void codegen(Node *node);
+
+void codegen(Function *prog);

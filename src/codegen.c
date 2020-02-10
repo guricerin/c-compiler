@@ -5,8 +5,7 @@ static void gen_addr(Node *node)
     if (node->kind == ND_VAR)
     {
         // スタックポインタからのオフセットで変数のアドレスを計算し、スタックにプッシュ
-        int offset = (node->name - 'a' + 1) * 8;
-        printf("    lea rax, [rbp-%d]\n", offset);
+        printf("    lea rax, [rbp-%d]\n", node->var->offset);
         printf("    push rax\n");
         return;
     }
@@ -105,7 +104,7 @@ static void gen(Node *node)
     printf("    push rax\n");
 }
 
-void codegen(Node *node)
+void codegen(Function *prog)
 {
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
@@ -113,15 +112,15 @@ void codegen(Node *node)
     printf("main:\n");
 
     // プロローグ
-    // 変数26個分の領域を確保
+    // 生成されたローカル変数分の領域を確保
     printf("    push rbp\n");
     printf("    mov rbp, rsp\n");
-    printf("    sub rsp, 208\n");
+    printf("    sub rsp, %d\n", prog->stack_size);
 
-    // 抽象構文木を下りながらコード生成
-    for (Node *n = node; n; n = n->next)
+    // 抽象構文木を根から葉に下りながらコード生成
+    for (Node *node = prog->node; node; node = node->next)
     {
-        gen(n);
+        gen(node);
     }
 
     // エピローグ

@@ -61,5 +61,8 @@ try 3 '1; 2; return 3;'
 echo "### step9: 1文字のローカル変数"
 try 3 'a=3; return a;'
 try 8 'a=3; z=5; return a+z;'
+echo "### step10: 複数文字のローカル変数"
+try 3 'foo=3; return foo;'
+try 8 'foo123=3; bar=5; return foo123+bar;'
 
 echo ok
