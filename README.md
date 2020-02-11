@@ -15,7 +15,8 @@ C Compiler with C11
 ## 生成規則
 
 ```
-program    = stmt*
+program    = function*
+function   = ident "(" ")" "{" stmt* "}"
 stmt       = "return" expr ";" 
            | expr ";"
            | "{" stmt* "}"
@@ -94,3 +95,12 @@ func-args  = "(" (assign ("," assign)*)? ")"
     * 現在の関数フレームの開始位置を常に指しているレジスタ
     * RSPは頻繁に変更されるため、実行される関数ごとに専用のスタックを用意する
     * x86-64では慣習としてRBPレジスタをベースレジスタとして使用
+
+### ABI
+* Application Binary Interface
+* プラットフォームごとの機械語の仕様
+    * 関数呼び出しで変更されるレジスタ・変更されないレジスタ
+    * 型のサイズ
+    * 構造体のレイアウトのルール
+    * ビットフィールドのレイアウトのルール
+* CPUベンダやOSベンダが策定する

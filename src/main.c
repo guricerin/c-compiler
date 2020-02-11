@@ -13,13 +13,16 @@ int main(int argc, char **argv)
     Function *prog = program();
 
     // ローカル変数群にRBPからのオフセットを割り当てる
-    int offset = 0;
-    for (Var *var = prog->locals; var; var = var->next)
+    for (Function *fn = prog; fn; fn = fn->next)
     {
-        offset += 8;
-        var->offset = offset;
+        int offset = 0;
+        for (Var *var = prog->locals; var; var = var->next)
+        {
+            offset += 8;
+            var->offset = offset;
+        }
+        fn->stack_size = offset;
     }
-    prog->stack_size = offset;
 
     codegen(prog);
 

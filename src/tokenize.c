@@ -74,6 +74,17 @@ int expect_number()
     return val;
 }
 
+// 次のトークンが識別子の場合、トークンを1つ読み進めてその識別子を返す。
+// それ以外の場合にはエラーを報告する。
+char *expect_ident()
+{
+    if (g_token->kind != TK_IDENT)
+        error_at(g_token->str, "expected an identifier");
+    char *s = strndup(g_token->str, g_token->len);
+    g_token = g_token->next;
+    return s;
+}
+
 bool at_eof()
 {
     return g_token->kind == TK_EOF;

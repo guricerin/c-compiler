@@ -1,12 +1,12 @@
 #include "9cc.h"
 
 // すべてのローカル変数をこの連結リストに格納する
-Var *locals;
+Var *g_locals;
 
 // ローカル変数を変数名で検索
 static Var *find_var(Token *tok)
 {
-    for (Var *var = locals; var; var = var->next)
+    for (Var *var = g_locals; var; var = var->next)
     {
         if (strlen(var->name) == tok->len && !strncmp(tok->str, var->name, tok->len))
             return var;
@@ -56,12 +56,13 @@ static Node *new_var_node(Var *var)
 static Var *new_lvar(char *name)
 {
     Var *var = calloc(1, sizeof(Var));
-    var->next = locals;
+    var->next = g_locals;
     var->name = name;
-    locals = var;
+    g_locals = var;
     return var;
 }
 
+static Function *function();
 static Node *stmt();
 static Node *expr();
 static Node *assign();
@@ -72,28 +73,49 @@ static Node *mul();
 static Node *unary();
 static Node *primary();
 
-// program = stmt*
+// program = function*
 Function *program()
 {
-    locals = NULL;
-    Node head = {};
-    Node *cur = &head;
+    Function head = {};
+    Function *cur = &head;
 
     while (!at_eof())
     {
-        cur->next = stmt();
+        cur->next = function();
         cur = cur->next;
     }
-
-    Function *prog = calloc(1, sizeof(Function));
-    prog->node = head.next;
-    prog->locals = locals;
-    return prog;
+    return head.next;
 }
 
 static Node *read_expr_stmt()
 {
     return new_unary(ND_EXPR_STMT, expr());
+}
+
+// function = ident "(" ")" "{" stmt* "}"
+static Function *function()
+{
+    g_locals = NULL;
+
+    char *name = expect_ident();
+    expect("(");
+    expect(")");
+    expect("{");
+
+    Node head = {};
+    Node *cur = &head;
+
+    while (!consume("}"))
+    {
+        cur->next = stmt();
+        cur = cur->next;
+    }
+
+    Function *fn = calloc(1, sizeof(Function));
+    fn->name = name;
+    fn->node = head.next;
+    fn->locals = g_locals; // 現時点で定義されているローカル変数
+    return fn;
 }
 
 // stmt = "return" expr ";"

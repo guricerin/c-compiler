@@ -38,6 +38,7 @@ bool consume(char *op);
 Token *consume_ident();
 void expect(char *op);
 int expect_number();
+char *expect_ident();
 bool at_eof();
 Token *tokenize();
 
@@ -109,9 +110,12 @@ struct Node
     long val; // kindがND_NUMの場合のみ使用
 };
 
+// 関数
 typedef struct Function Function;
 struct Function
 {
+    Function *next;
+    char *name;
     Node *node;
     Var *locals;
     int stack_size;

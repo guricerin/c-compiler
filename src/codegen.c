@@ -1,8 +1,9 @@
 #include "9cc.h"
 
 // アセンブリにおけるラベルの通し番号
-static int labelseq = 1;
-static char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+static int g_labelseq = 1;
+static char *g_argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+static char *g_funcname;
 
 static void gen_addr(Node *node)
 {
@@ -58,11 +59,11 @@ static void gen(Node *node)
     case ND_RETURN:
         gen(node->lhs);
         printf("    pop rax\n");
-        printf("    jmp .L.return\n");
+        printf("    jmp .L.return.%s\n", g_funcname);
         return;
     case ND_IF:
     {
-        int seq = labelseq++;
+        int seq = g_labelseq++;
         if (node->els)
         {
             gen(node->cond);
@@ -88,7 +89,7 @@ static void gen(Node *node)
     } // case ND_IF
     case ND_WHILE:
     {
-        int seq = labelseq++;
+        int seq = g_labelseq++;
         printf(".L.begin.%d:\n", seq);
         gen(node->cond);
         printf("    pop rax\n");
@@ -101,7 +102,7 @@ static void gen(Node *node)
     } // case ND_WHILE
     case ND_FOR:
     {
-        int seq = labelseq++;
+        int seq = g_labelseq++;
         if (node->init)
         {
             gen(node->init);
@@ -140,11 +141,11 @@ static void gen(Node *node)
 
         for (int i = nargs - 1; i >= 0; i--)
         {
-            printf("    pop %s\n", argreg[i]);
+            printf("    pop %s\n", g_argreg[i]);
         }
 
         // x86-64の関数呼び出しのABIは、関数呼び出しをする前にRSPが16の倍数になっていなければならない
-        int seq = labelseq++;
+        int seq = g_labelseq++;
         printf("    mov rax, rsp\n");
         printf("    and rax, 15\n");
         printf("    jnz .L.call.%d\n", seq);
@@ -212,25 +213,30 @@ void codegen(Function *prog)
 {
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
-    printf(".global main\n");
-    printf("main:\n");
 
-    // プロローグ
-    // 生成されたローカル変数分の領域を確保
-    printf("    push rbp\n");
-    printf("    mov rbp, rsp\n");
-    printf("    sub rsp, %d\n", prog->stack_size);
-
-    // 抽象構文木を根から葉に下りながらコード生成
-    for (Node *node = prog->node; node; node = node->next)
+    for (Function *fn = prog; fn; fn = fn->next)
     {
-        gen(node);
-    }
+        printf(".global %s\n", fn->name);
+        printf("%s:\n", fn->name);
+        g_funcname = fn->name;
 
-    // エピローグ
-    // 最後の式の結果が残っているのでそれが返り値になる
-    printf(".L.return:\n");
-    printf("    mov rsp, rbp\n");
-    printf("    pop rbp\n");
-    printf("    ret\n");
+        // プロローグ
+        // 生成されたローカル変数分の領域を確保
+        printf("    push rbp\n");
+        printf("    mov rbp, rsp\n");
+        printf("    sub rsp, %d\n", fn->stack_size);
+
+        // 抽象構文木を根から葉に下りながらコード生成
+        for (Node *node = fn->node; node; node = node->next)
+        {
+            gen(node);
+        }
+
+        // エピローグ
+        // 最後の式の結果が残っているのでそれが返り値になる
+        printf(".L.return.%s:\n", fn->name);
+        printf("    mov rsp, rbp\n");
+        printf("    pop rbp\n");
+        printf("    ret\n");
+    }
 }
