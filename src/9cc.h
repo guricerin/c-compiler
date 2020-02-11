@@ -8,6 +8,18 @@
 #include <string.h>
 
 /*
+    type.c
+*/
+
+typedef enum
+{
+    TY_INT,
+    TY_PTR,
+} TypeKind;
+
+typedef struct Type Type;
+
+/*
     tokenize.c
 */
 
@@ -72,8 +84,11 @@ struct VarList
 // 抽象構文機のノードの種類
 typedef enum
 {
-    ND_ADD,       // +
-    ND_SUB,       // -
+    ND_ADD,       // 数値の加算
+    ND_PTR_ADD,   // ポインター + 数値
+    ND_SUB,       // 数値の減算
+    ND_PTR_SUB,   // ポインター - 数値
+    ND_PTR_DIFF,  // ポインター - ポインター
     ND_MUL,       // *
     ND_DIV,       // /
     ND_EQ,        // ==
@@ -100,6 +115,7 @@ struct Node
 {
     NodeKind kind; // ノードの型
     Token *tok;    // トークン
+    Type *ty;      // 値の型
     Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
@@ -133,6 +149,19 @@ struct Function
 };
 
 Function *program();
+
+/*
+    type.c
+*/
+
+struct Type
+{
+    TypeKind kind;
+    Type *base; // 参照先の型。kindがTY_PTRの場合に使用
+};
+
+bool is_integer(Type *ty);
+void add_type(Node *node);
 
 /*
     codegen.c

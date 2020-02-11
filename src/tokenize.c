@@ -33,6 +33,9 @@ static void verror_at(char *loc, char *fmt, va_list ap)
     int pos = loc - g_user_input;
     fprintf(stderr, "%s\n", g_user_input);
     fprintf(stderr, "%*s", pos, ""); // pos個の空白
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
     exit(1);
 }
 
