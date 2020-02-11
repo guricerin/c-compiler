@@ -110,7 +110,7 @@ static bool is_alnum(char c)
 static char *starts_with_reserved(char *p)
 {
     // 予約語
-    static char *kw[] = {"return", "if", "else", "while"};
+    static char *kw[] = {"return", "if", "else", "while", "for"};
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++)
     {
