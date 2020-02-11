@@ -8,8 +8,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    user_input = argv[1];
-    token = tokenize(argv[1]);
+    g_user_input = argv[1];
+    g_token = tokenize(argv[1]);
     Function *prog = program();
 
     // ローカル変数群にRBPからのオフセットを割り当てる

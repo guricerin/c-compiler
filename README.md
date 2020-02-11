@@ -30,8 +30,9 @@ add        = mul ("+" mul | "-" mul)*
 mul        = unary ("*" unary | "/" unary)*
 unary      = ("+" | "-")? unary | primary
 primary    = "(" expr ")" 
-           | ident ("(" ")")?
+           | ident func-args?
            | num
+func-args  = "(" (assign ("," assign)*)? ")"
 ```
 
 ## 用語

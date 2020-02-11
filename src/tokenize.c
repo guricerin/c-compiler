@@ -1,7 +1,7 @@
 #include "9cc.h"
 
-char *user_input;
-Token *token;
+char *g_user_input;
+Token *g_token;
 
 // エラーを報告し、プログラムを終了する
 void error(char *fmt, ...)
@@ -19,8 +19,8 @@ void error_at(char *loc, char *fmt, ...)
     va_list ap;
     va_start(ap, fmt);
 
-    int pos = loc - user_input;
-    fprintf(stderr, "%s\n", user_input);
+    int pos = loc - g_user_input;
+    fprintf(stderr, "%s\n", g_user_input);
     fprintf(stderr, "%*s", pos, ""); // pos個の空白
     fprintf(stderr, "^ ");
     vfprintf(stderr, fmt, ap);
@@ -34,22 +34,22 @@ bool consume(char *op)
 {
     // 条件の順序に注意
     // 長いトークンから先にトークナイズする必要あり
-    if (token->kind != TK_RESERVED || strlen(op) != token->len || strncmp(token->str, op, token->len))
+    if (g_token->kind != TK_RESERVED || strlen(op) != g_token->len || strncmp(g_token->str, op, g_token->len))
         return false;
-    token = token->next;
+    g_token = g_token->next;
     return true;
 }
 
 Token *consume_ident()
 {
-    if (token->kind != TK_IDENT)
+    if (g_token->kind != TK_IDENT)
     {
         return NULL;
     }
     else
     {
-        Token *t = token;
-        token = token->next;
+        Token *t = g_token;
+        g_token = g_token->next;
         return t;
     }
 }
@@ -58,25 +58,25 @@ Token *consume_ident()
 // それ以外の場合にはエラーを報告する。
 void expect(char *op)
 {
-    if (token->kind != TK_RESERVED || strlen(op) != token->len || strncmp(token->str, op, token->len))
-        error_at(token->str, "'%s'ではありません", op);
-    token = token->next;
+    if (g_token->kind != TK_RESERVED || strlen(op) != g_token->len || strncmp(g_token->str, op, g_token->len))
+        error_at(g_token->str, "'%s'ではありません", op);
+    g_token = g_token->next;
 }
 
 // 次のトークンが数値の場合、トークンを1つ読み進めてその数値を返す。
 // それ以外の場合にはエラーを報告する。
 int expect_number()
 {
-    if (token->kind != TK_NUM)
-        error_at(token->str, "数ではありません");
-    long val = token->val;
-    token = token->next;
+    if (g_token->kind != TK_NUM)
+        error_at(g_token->str, "数ではありません");
+    long val = g_token->val;
+    g_token = g_token->next;
     return val;
 }
 
 bool at_eof()
 {
-    return token->kind == TK_EOF;
+    return g_token->kind == TK_EOF;
 }
 
 // 新しいトークンを作成してcurに繋げる

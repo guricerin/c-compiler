@@ -102,7 +102,7 @@ static Node *read_expr_stmt()
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
-Node *stmt()
+static Node *stmt()
 {
     if (consume("return"))
     {
@@ -191,7 +191,7 @@ static Node *assign()
 }
 
 // equality = relational ("==" relational | "!=" relational)
-Node *equality()
+static Node *equality()
 {
     Node *node = relational();
     for (;;)
@@ -206,7 +206,7 @@ Node *equality()
 }
 
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
-Node *relational()
+static Node *relational()
 {
     Node *node = add();
 
@@ -227,7 +227,7 @@ Node *relational()
 }
 
 // add = mul ("+" mul | "-" mul)*
-Node *add()
+static Node *add()
 {
     Node *node = mul();
 
@@ -243,7 +243,7 @@ Node *add()
 }
 
 // mul = unary ("*" unary | "/" unary)*
-Node *mul()
+static Node *mul()
 {
     Node *node = unary();
     for (;;)
@@ -258,7 +258,7 @@ Node *mul()
 }
 
 // unary = ("+" | "-")? unary | primary
-Node *unary()
+static Node *unary()
 {
     if (consume("+"))
         return unary();
@@ -268,10 +268,29 @@ Node *unary()
         return primary();
 }
 
+// func-args = "(" (assign ("," assign)*)? ")"
+static Node *func_args()
+{
+    if (consume(")"))
+    {
+        return NULL;
+    }
+
+    Node *head = assign();
+    Node *cur = head;
+    while (consume(","))
+    {
+        cur->next = assign();
+        cur = cur->next;
+    }
+    expect(")");
+    return head;
+}
+
 // primary = "(" expr ")"
-//         | ident ("(" ")")?
+//         | ident func-args?
 //         | num
-Node *primary()
+static Node *primary()
 {
     // 次のトークンが"("なら、"(" expr ")"のはず
     if (consume("("))
@@ -288,9 +307,9 @@ Node *primary()
         // 関数呼び出し
         if (consume("("))
         {
-            expect(")");
             Node *node = new_node(ND_FUNCALL);
             node->funcname = strndup(tok->str, tok->len);
+            node->args = func_args();
             return node;
         }
 

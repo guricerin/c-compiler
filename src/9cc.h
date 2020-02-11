@@ -41,12 +41,12 @@ int expect_number();
 bool at_eof();
 Token *tokenize();
 
-extern char *filename;
+extern char *g_filename;
 // 入力プログラム
-extern char *user_input;
+extern char *g_user_input;
 // 現在着目しているトークン
 // 入力トークン列を標準入力のようなストリーム(グローバル変数)として扱うほうがパーサのコードが読みやすくなることが多い
-extern Token *token;
+extern Token *g_token;
 
 /*
     parse.c
@@ -103,6 +103,7 @@ struct Node
     Node *body; // ブロック。kindがND_BLOCKの場合のみ使用
 
     char *funcname; // 関数名。kindがND_FUNCALLの場合のみ使用
+    Node *args;     // 引数。kindがND_FUNCALLの場合のみ使用
 
     Var *var; // ローカル変数。kindがND_VALの場合のみ使用
     long val; // kindがND_NUMの場合のみ使用
