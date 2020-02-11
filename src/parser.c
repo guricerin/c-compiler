@@ -268,7 +268,9 @@ Node *unary()
         return primary();
 }
 
-// primary = "(" expr ")" | ident | num
+// primary = "(" expr ")"
+//         | ident ("(" ")")?
+//         | num
 Node *primary()
 {
     // 次のトークンが"("なら、"(" expr ")"のはず
@@ -283,6 +285,15 @@ Node *primary()
     Token *tok = consume_ident();
     if (tok)
     {
+        // 関数呼び出し
+        if (consume("("))
+        {
+            expect(")");
+            Node *node = new_node(ND_FUNCALL);
+            node->funcname = strndup(tok->str, tok->len);
+            return node;
+        }
+
         Var *var = find_var(tok);
         // ローカル変数リストになければ新規生成
         if (!var)

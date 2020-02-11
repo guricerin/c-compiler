@@ -128,6 +128,10 @@ static void gen(Node *node)
             gen(n);
         }
         return;
+    case ND_FUNCALL:
+        printf("    call %s\n", node->funcname);
+        printf("    push rax\n");
+        return;
     } // switch
 
     gen(node->lhs);

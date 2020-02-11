@@ -15,7 +15,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) -o $@ -c $< $(CFLAGS)
 
 test: 9cc
-	./tests/test.sh
+	./test.sh
 
 clean:
 	rm -f $(BIN_DIR)/* $(OBJ_DIR)/*

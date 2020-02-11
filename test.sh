@@ -1,15 +1,21 @@
 #!/bin/bash
 
-readonly base_path=$(dirname ${0} | pwd)
+readonly base_path=$(cd $(dirname $0); pwd)
+
+cat <<EOF | gcc -xc -c -o ./obj/tmp2.o -
+int ret3() { return 3; }
+int ret5() { return 5; }
+EOF
 
 assert () {
     local -r expected="$1"
     local -r input="$2"
     local -r assembly="${base_path}/obj/tmp.s"
+    local -r obj2="${base_path}/obj/tmp2.o"
     local -r binary="${base_path}/obj/tmp"
 
     ${base_path}/bin/9cc "$input" > "$assembly"
-    gcc -static -o "$binary" "$assembly"
+    gcc -static -o "$binary" "$assembly" "$obj2"
     $binary
     local -r actual="$?"
 
@@ -78,5 +84,8 @@ assert 3 'for (;;) return 3; return 5;'
 echo "### step13: ブロック"
 assert 3 '{1; {2;} return 3;}'
 assert 55 'i=0; j=0; while(i<=10) {j=i+j; i=i+1;} return j;'
+echo "### step14: 引数のない関数呼び出し"
+assert 3 'return ret3();'
+assert 5 'return ret5();'
 
 echo ok

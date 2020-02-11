@@ -78,13 +78,14 @@ typedef enum
     ND_WHILE,     // "while"キーワード
     ND_FOR,       // "for"キーワード
     ND_BLOCK,     // { ... }
+    ND_FUNCALL,   // 関数呼び出し
     ND_EXPR_STMT, // 式
     ND_VAR,       // 変数
     ND_NUM,       // 整数
 } NodeKind;
 
+// 抽象構文木のノードの型
 typedef struct Node Node;
-// 抽象構文機のノードの型
 struct Node
 {
     NodeKind kind; // ノードの型
@@ -99,10 +100,11 @@ struct Node
     Node *init; // forの初期化文
     Node *inc;  // forの繰り返し文
 
-    // ブロック
-    Node *body;
+    Node *body; // ブロック。kindがND_BLOCKの場合のみ使用
 
-    Var *var; // ローカル変数。kindがND_VALの場合のm使用
+    char *funcname; // 関数名。kindがND_FUNCALLの場合のみ使用
+
+    Var *var; // ローカル変数。kindがND_VALの場合のみ使用
     long val; // kindがND_NUMの場合のみ使用
 };
 
