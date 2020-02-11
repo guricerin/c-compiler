@@ -214,6 +214,7 @@ void codegen(Function *prog)
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
 
+    // 定義された関数ごとに出力
     for (Function *fn = prog; fn; fn = fn->next)
     {
         printf(".global %s\n", fn->name);
@@ -225,6 +226,14 @@ void codegen(Function *prog)
         printf("    push rbp\n");
         printf("    mov rbp, rsp\n");
         printf("    sub rsp, %d\n", fn->stack_size);
+
+        // 引数をスタックにプッシュ
+        int i = 0;
+        for (VarList *vl = fn->params; vl; vl = vl->next)
+        {
+            Var *var = vl->var;
+            printf("    mov [rbp-%d], %s\n", var->offset, g_argreg[i++]);
+        }
 
         // 抽象構文木を根から葉に下りながらコード生成
         for (Node *node = fn->node; node; node = node->next)

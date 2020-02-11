@@ -57,9 +57,15 @@ extern Token *g_token;
 typedef struct Var Var;
 struct Var
 {
-    Var *next;
     char *name; // 変数名
     int offset; // RBPからのオフセット
+};
+
+typedef struct VarList VarList;
+struct VarList
+{
+    VarList *next;
+    Var *var;
 };
 
 // 抽象構文機のノードの種類
@@ -115,9 +121,10 @@ typedef struct Function Function;
 struct Function
 {
     Function *next;
-    char *name;
+    char *name;      // 関数名
+    VarList *params; // 引数
     Node *node;
-    Var *locals;
+    VarList *locals; // ローカル変数
     int stack_size;
 };
 

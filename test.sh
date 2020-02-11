@@ -117,4 +117,9 @@ assert 21 'main() { return add6(1,2,3,4,5,6); }'
 echo "### step15: 引数のない関数定義"
 assert 32 'main() { return ret32(); } ret32() { return 32; }'
 
+echo "### step15: 引数がある関数定義"
+assert 7 'main() { return add2(3,4); } add2(x,y) { return x+y; }'
+assert 1 'main() { return sub2(4,3); } sub2(x,y) { return x-y; }'
+assert 55 'main() { return fib(9); } fib(x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
+
 echo ok
