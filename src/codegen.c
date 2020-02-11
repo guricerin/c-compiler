@@ -143,7 +143,20 @@ static void gen(Node *node)
             printf("    pop %s\n", argreg[i]);
         }
 
+        // x86-64の関数呼び出しのABIは、関数呼び出しをする前にRSPが16の倍数になっていなければならない
+        int seq = labelseq++;
+        printf("    mov rax, rsp\n");
+        printf("    and rax, 15\n");
+        printf("    jnz .L.call.%d\n", seq);
+        printf("    mov rax, 0\n");
         printf("    call %s\n", node->funcname);
+        printf("    jmp .L.end.%d\n", seq);
+        printf(".L.call.%d:\n", seq);
+        printf("    sub rsp, 8\n");
+        printf("    mov rax, 0\n");
+        printf("    call %s\n", node->funcname);
+        printf("    add rsp, 8\n");
+        printf(".L.end.%d:\n", seq);
         printf("    push rax\n");
         return;
     } // case ND_FUNCALL
