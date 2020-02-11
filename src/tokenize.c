@@ -28,16 +28,32 @@ void error_at(char *loc, char *fmt, ...)
     exit(1);
 }
 
+static void verror_at(char *loc, char *fmt, va_list ap)
+{
+    int pos = loc - g_user_input;
+    fprintf(stderr, "%s\n", g_user_input);
+    fprintf(stderr, "%*s", pos, ""); // pos個の空白
+    exit(1);
+}
+
+void error_tok(Token *tok, char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    verror_at(tok->str, fmt, ap);
+}
+
 // トークン先読み
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めてtrueを返す
-bool consume(char *op)
+Token *consume(char *op)
 {
     // 条件の順序に注意
     // 長いトークンから先にトークナイズする必要あり
     if (g_token->kind != TK_RESERVED || strlen(op) != g_token->len || strncmp(g_token->str, op, g_token->len))
-        return false;
+        return NULL;
+    Token *tok = g_token;
     g_token = g_token->next;
-    return true;
+    return tok;
 }
 
 Token *consume_ident()
@@ -59,7 +75,7 @@ Token *consume_ident()
 void expect(char *op)
 {
     if (g_token->kind != TK_RESERVED || strlen(op) != g_token->len || strncmp(g_token->str, op, g_token->len))
-        error_at(g_token->str, "'%s'ではありません", op);
+        error_tok(g_token, "'%s'ではありません", op);
     g_token = g_token->next;
 }
 
@@ -68,7 +84,7 @@ void expect(char *op)
 int expect_number()
 {
     if (g_token->kind != TK_NUM)
-        error_at(g_token->str, "数ではありません");
+        error_tok(g_token, "数ではありません");
     long val = g_token->val;
     g_token = g_token->next;
     return val;
@@ -79,7 +95,7 @@ int expect_number()
 char *expect_ident()
 {
     if (g_token->kind != TK_IDENT)
-        error_at(g_token->str, "expected an identifier");
+        error_tok(g_token, "expected an identifier");
     char *s = strndup(g_token->str, g_token->len);
     g_token = g_token->next;
     return s;

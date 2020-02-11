@@ -15,7 +15,7 @@ static void gen_addr(Node *node)
         return;
     }
 
-    error("代入文の左辺値が変数ではありません");
+    error_tok(node->tok, "代入文の左辺値が変数ではありません");
 }
 
 // メモリから値を読み込む

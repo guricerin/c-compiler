@@ -15,40 +15,41 @@ static Var *find_var(Token *tok)
     return NULL;
 }
 
-static Node *new_node(NodeKind kind)
+static Node *new_node(NodeKind kind, Token *tok)
 {
     Node *node = calloc(1, sizeof(Node));
     node->kind = kind;
+    node->tok = tok;
     return node;
 }
 
 // 二項演算
-static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
+static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok)
 {
-    Node *node = new_node(kind);
+    Node *node = new_node(kind, tok);
     node->lhs = lhs;
     node->rhs = rhs;
     return node;
 }
 
 // 単項演算子
-static Node *new_unary(NodeKind kind, Node *expr)
+static Node *new_unary(NodeKind kind, Node *expr, Token *tok)
 {
-    Node *node = new_node(kind);
+    Node *node = new_node(kind, tok);
     node->lhs = expr;
     return node;
 }
 
-static Node *new_node_num(int val)
+static Node *new_node_num(long val, Token *tok)
 {
-    Node *node = new_node(ND_NUM);
+    Node *node = new_node(ND_NUM, tok);
     node->val = val;
     return node;
 }
 
-static Node *new_var_node(Var *var)
+static Node *new_var_node(Var *var, Token *tok)
 {
-    Node *node = new_node(ND_VAR);
+    Node *node = new_node(ND_VAR, tok);
     node->var = var;
     return node;
 }
@@ -93,7 +94,8 @@ Function *program()
 
 static Node *read_expr_stmt()
 {
-    return new_unary(ND_EXPR_STMT, expr());
+    Token *tok = g_token;
+    return new_unary(ND_EXPR_STMT, expr(), tok);
 }
 
 static VarList *read_func_params()
@@ -149,15 +151,16 @@ static Function *function()
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 static Node *stmt()
 {
-    if (consume("return"))
+    Token *tok;
+    if (tok = consume("return"))
     {
-        Node *node = new_unary(ND_RETURN, expr());
+        Node *node = new_unary(ND_RETURN, expr(), tok);
         expect(";");
         return node;
     }
-    else if (consume("if"))
+    else if (tok = consume("if"))
     {
-        Node *node = new_node(ND_IF);
+        Node *node = new_node(ND_IF, tok);
         expect("(");
         node->cond = expr();
         expect(")");
@@ -168,18 +171,18 @@ static Node *stmt()
         }
         return node;
     }
-    else if (consume("while"))
+    else if (tok = consume("while"))
     {
-        Node *node = new_node(ND_WHILE);
+        Node *node = new_node(ND_WHILE, tok);
         expect("(");
         node->cond = expr();
         expect(")");
         node->then = stmt();
         return node;
     }
-    else if (consume("for"))
+    else if (tok = consume("for"))
     {
-        Node *node = new_node(ND_FOR);
+        Node *node = new_node(ND_FOR, tok);
         expect("(");
         if (!consume(";"))
         {
@@ -199,7 +202,7 @@ static Node *stmt()
         node->then = stmt();
         return node;
     }
-    else if (consume("{")) // ブロック
+    else if (tok = consume("{")) // ブロック
     {
         Node head = {};
         Node *cur = &head;
@@ -208,7 +211,7 @@ static Node *stmt()
             cur->next = stmt();
             cur = cur->next;
         }
-        Node *node = new_node(ND_BLOCK);
+        Node *node = new_node(ND_BLOCK, tok);
         node->body = head.next;
         return node;
     }
@@ -230,8 +233,9 @@ static Node *expr()
 static Node *assign()
 {
     Node *node = equality();
-    if (consume("="))
-        node = new_binary(ND_ASSIGN, node, assign());
+    Token *tok;
+    if (tok = consume("="))
+        node = new_binary(ND_ASSIGN, node, assign(), tok);
     return node;
 }
 
@@ -239,12 +243,13 @@ static Node *assign()
 static Node *equality()
 {
     Node *node = relational();
+    Token *tok;
     for (;;)
     {
-        if (consume("=="))
-            node = new_binary(ND_EQ, node, relational());
-        else if (consume("!="))
-            node = new_binary(ND_NE, node, relational());
+        if (tok = consume("=="))
+            node = new_binary(ND_EQ, node, relational(), tok);
+        else if (tok = consume("!="))
+            node = new_binary(ND_NE, node, relational(), tok);
         else
             return node;
     }
@@ -254,18 +259,19 @@ static Node *equality()
 static Node *relational()
 {
     Node *node = add();
+    Token *tok;
 
     for (;;)
     {
-        if (consume("<"))
-            node = new_binary(ND_LT, node, add());
-        else if (consume("<="))
-            node = new_binary(ND_LE, node, add());
+        if (tok = consume("<"))
+            node = new_binary(ND_LT, node, add(), tok);
+        else if (tok = consume("<="))
+            node = new_binary(ND_LE, node, add(), tok);
         // 左辺と右辺を単にひっくり返す
-        else if (consume(">"))
-            node = new_binary(ND_LT, add(), node);
-        else if (consume(">="))
-            node = new_binary(ND_LE, add(), node);
+        else if (tok = consume(">"))
+            node = new_binary(ND_LT, add(), node, tok);
+        else if (tok = consume(">="))
+            node = new_binary(ND_LE, add(), node, tok);
         else
             return node;
     }
@@ -275,13 +281,14 @@ static Node *relational()
 static Node *add()
 {
     Node *node = mul();
+    Token *tok;
 
     for (;;)
     {
-        if (consume("+"))
-            node = new_binary(ND_ADD, node, mul());
-        else if (consume("-"))
-            node = new_binary(ND_SUB, node, mul());
+        if (tok = consume("+"))
+            node = new_binary(ND_ADD, node, mul(), tok);
+        else if (tok = consume("-"))
+            node = new_binary(ND_SUB, node, mul(), tok);
         else
             return node;
     }
@@ -291,12 +298,14 @@ static Node *add()
 static Node *mul()
 {
     Node *node = unary();
+    Token *tok;
+
     for (;;)
     {
-        if (consume("*"))
-            node = new_binary(ND_MUL, node, unary());
-        else if (consume("/"))
-            node = new_binary(ND_DIV, node, unary());
+        if (tok = consume("*"))
+            node = new_binary(ND_MUL, node, unary(), tok);
+        else if (tok = consume("/"))
+            node = new_binary(ND_DIV, node, unary(), tok);
         else
             return node;
     }
@@ -305,10 +314,11 @@ static Node *mul()
 // unary = ("+" | "-")? unary | primary
 static Node *unary()
 {
-    if (consume("+"))
+    Token *tok;
+    if (tok = consume("+"))
         return unary();
-    else if (consume("-"))
-        return new_binary(ND_SUB, new_node_num(0), unary());
+    else if (tok = consume("-"))
+        return new_binary(ND_SUB, new_node_num(0, tok), unary(), tok);
     else
         return primary();
 }
@@ -345,14 +355,14 @@ static Node *primary()
         return node;
     }
 
+    Token *tok;
     // 識別子なら変数名のはず
-    Token *tok = consume_ident();
-    if (tok)
+    if (tok = consume_ident())
     {
         // 関数呼び出し
         if (consume("("))
         {
-            Node *node = new_node(ND_FUNCALL);
+            Node *node = new_node(ND_FUNCALL, tok);
             node->funcname = strndup(tok->str, tok->len);
             node->args = func_args();
             return node;
@@ -365,9 +375,12 @@ static Node *primary()
             // strndup: 文字列を複製するGCC拡張関数
             var = new_lvar(strndup(tok->str, tok->len));
         }
-        return new_var_node(var);
+        return new_var_node(var, tok);
     }
 
     // そうでなければ数値のはず
-    return new_node_num(expect_number());
+    tok = g_token;
+    if (tok->kind != TK_NUM)
+        error_tok(tok, "数値ではありません");
+    return new_node_num(expect_number(), tok);
 }
