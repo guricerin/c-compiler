@@ -5,13 +5,19 @@ static int g_labelseq = 1;
 static char *g_argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 static char *g_funcname;
 
+static void gen(Node *node);
+
 static void gen_addr(Node *node)
 {
-    if (node->kind == ND_VAR)
+    switch (node->kind)
     {
+    case ND_VAR:
         // スタックポインタからのオフセットで変数のアドレスを計算し、スタックにプッシュ
         printf("    lea rax, [rbp-%d]\n", node->var->offset);
         printf("    push rax\n");
+        return;
+    case ND_DEREF:
+        gen(node->lhs);
         return;
     }
 
@@ -55,6 +61,13 @@ static void gen(Node *node)
         gen_addr(node->lhs);
         gen(node->rhs);
         store();
+        return;
+    case ND_ADDR:
+        gen_addr(node->lhs);
+        return;
+    case ND_DEREF:
+        gen(node->lhs);
+        load();
         return;
     case ND_RETURN:
         gen(node->lhs);

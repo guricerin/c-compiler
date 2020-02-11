@@ -311,7 +311,8 @@ static Node *mul()
     }
 }
 
-// unary = ("+" | "-")? unary | primary
+// unary = ("+" | "-" | "*" | "&")? unary
+//       | primary
 static Node *unary()
 {
     Token *tok;
@@ -319,6 +320,10 @@ static Node *unary()
         return unary();
     else if (tok = consume("-"))
         return new_binary(ND_SUB, new_node_num(0, tok), unary(), tok);
+    else if (tok = consume("&"))
+        return new_unary(ND_ADDR, unary(), tok);
+    else if (tok = consume("*"))
+        return new_unary(ND_DEREF, unary(), tok);
     else
         return primary();
 }

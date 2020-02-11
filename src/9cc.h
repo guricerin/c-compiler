@@ -81,6 +81,8 @@ typedef enum
     ND_LT,        // <
     ND_LE,        // <=
     ND_ASSIGN,    // =
+    ND_ADDR,      // 単項&
+    ND_DEREF,     // 単項*
     ND_RETURN,    // "return"キーワード
     ND_IF,        // "if"キーワード
     ND_WHILE,     // "while"キーワード
