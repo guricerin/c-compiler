@@ -18,6 +18,7 @@ C Compiler with C11
 program    = stmt*
 stmt       = "return" expr ";" 
            | expr ";"
+           | "{" stmt* "}"
            | "if" "(" expr ")" stmt ("else" stmt)?
            | "while" "(" expr ")" stmt
            | "for" "(" expr? ";" expr? ";" expr? ")" stmt

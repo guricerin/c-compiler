@@ -122,6 +122,12 @@ static void gen(Node *node)
         printf(".L.end.%d:\n", seq);
         return;
     } // case ND_FOR
+    case ND_BLOCK:
+        for (Node *n = node->body; n; n = n->next)
+        {
+            gen(n);
+        }
+        return;
     } // switch
 
     gen(node->lhs);
