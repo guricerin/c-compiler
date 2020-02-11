@@ -1,6 +1,6 @@
 #include "9cc.h"
 
-// 通し番号付きのラベル
+// アセンブリにおけるラベルの通し番号
 static int labelseq = 1;
 
 static void gen_addr(Node *node)
@@ -84,8 +84,21 @@ static void gen(Node *node)
             printf(".L.end.%d:\n", seq);
         }
         return;
-    }
-    }
+    } // case ND_IF
+    case ND_WHILE:
+    {
+        int seq = labelseq++;
+        printf(".L.begin.%d:\n", seq);
+        gen(node->cond);
+        printf("    pop rax\n");
+        printf("    cmp rax, 0\n");
+        printf("    je  .L.end.%d\n", seq);
+        gen(node->then);
+        printf("    jmp .L.begin.%d\n", seq);
+        printf(".L.end.%d:\n", seq);
+        return;
+    } // case ND_WHILE
+    } // switch
 
     gen(node->lhs);
     gen(node->rhs);

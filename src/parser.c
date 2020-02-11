@@ -99,6 +99,7 @@ static Node *read_expr_stmt()
 // stmt = "return" expr ";"
 //      | expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
+//      | "while" "(" expr ")" stmt
 Node *stmt()
 {
     if (consume("return"))
@@ -118,6 +119,15 @@ Node *stmt()
         {
             node->els = stmt();
         }
+        return node;
+    }
+    else if (consume("while"))
+    {
+        Node *node = new_node(ND_WHILE);
+        expect("(");
+        node->cond = expr();
+        expect(")");
+        node->then = stmt();
         return node;
     }
     else

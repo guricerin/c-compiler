@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -19,6 +20,7 @@ typedef enum
     TK_EOF,      // 入力の終わりを表す
 } TokenKind;
 
+// 再帰的な構造体を作りたい場合、単純に typedef struct {...} NAME; とするのでは不可能
 // トークン
 typedef struct Token Token;
 struct Token
@@ -73,12 +75,12 @@ typedef enum
     ND_ASSIGN,    // =
     ND_RETURN,    // "return"キーワード
     ND_IF,        // "if"キーワード
+    ND_WHILE,     // "while"キーワード
     ND_EXPR_STMT, // 式
     ND_VAR,       // 変数
     ND_NUM,       // 整数
 } NodeKind;
 
-// 再帰的な構造体を作りたい場合、単純に typedef struct {...} NAME; とするのでは不可能
 typedef struct Node Node;
 // 抽象構文機のノードの型
 struct Node
@@ -88,7 +90,7 @@ struct Node
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
 
-    // if文
+    // if or while
     Node *cond;
     Node *then;
     Node *els;

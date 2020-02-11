@@ -1,5 +1,7 @@
 # c-compiler
 
+C Compiler with C11  
+
 [低レイヤを知りたい人のためのCコンパイラ作成入門](https://www.sigbus.info/compilerbook)
 
 ## 一連のデータ処理
@@ -17,6 +19,7 @@ program    = stmt*
 stmt       = "return" expr ";" 
            | expr ";"
            | "if" "(" expr ")" stmt ("else" stmt)?
+           | "while" "(" expr ")" stmt
 expr       = assign
 assign     = equality ("=" assign)?
 equality   = relational ("==" relational | "!=" relational)
